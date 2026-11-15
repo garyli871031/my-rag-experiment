@@ -1,0 +1,91 @@
+-- 1. Ensure the pgvector extension is installed (must be run as superuser)
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- 2. Grant USAGE and CREATE permissions on the public schema to your user
+GRANT USAGE, CREATE ON SCHEMA public TO gary;
+
+-- 3. (Optional) If tables already exist but throw permission errors:
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO gary;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO gary;
+
+
+psql -U postgres -d chatvectordb
+
+import psycopg
+from psycopg import sql
+
+def ensure_db_permissions():
+    # Connect using a superuser account (or your admin connection string)
+    admin_conn_uri = "postgresql://postgres:YOUR_SUPERUSER_PASSWORD@localhost:5432/chatvectordb"
+    
+    try:
+        with psycopg.connect(admin_conn_uri) as conn:
+            with conn.cursor() as cur:
+                # 1. Grant USAGE and CREATE on the public schema to your application user ('gary')
+                cur.execute("GRANT USAGE, CREATE ON SCHEMA public TO gary;")
+                
+                # 2. Set default privileges for future tables created in public
+                cur.execute("ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO gary;")
+                cur.execute("ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL PRIVILEGES ON SEQUENCES TO gary;")
+                
+                conn.commit()
+                print("Database schema privileges successfully ensured.")
+    except Exception as e:
+        print(f"Note: Could not run automated GRANT (may require superuser or already applied): {e}")
+
+# Call this before initializing your vector store
+ensure_db_permissions()
+
+
+log leger
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id SERIAL PRIMARY KEY,
+    thread_id TEXT NOT NULL,
+    actor TEXT NOT NULL,         -- e.g., 'user', 'ai_assistant', or a specific tool name
+    operation TEXT NOT NULL,     -- e.g., 'query_retriever', 'execute_tool', 'user_prompt'
+    details TEXT,                -- inputs, parameters, or summary of what was done
+    timestamp TIMESTAMPTZ DEFAULT NOW()
+);
+
+superuser
+
+psql -U postgres -d chatvectordb
+
+
+user and privileges management
+
+-- Grant schema-level usage and creation rights
+GRANT USAGE, CREATE ON SCHEMA public TO gary;
+
+-- Grant access to existing tables and sequences
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO gary;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO gary;
+
+-- Ensure future tables created by migrations or postgres are automatically accessible to gary
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+GRANT ALL PRIVILEGES ON TABLES TO gary;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+GRANT ALL PRIVILEGES ON SEQUENCES TO gary;
+
+#created user
+sudo -u postgres psql -c "CREATE USER lina WITH PASSWORD '120818';"
+
+sudo -u postgres psql -d chatvectordb -c "GRANT ALL PRIVILEGES ON DATABASE chatvectordb TO lina;""
+
+sudo -u 
+postgres psql -d chatvectordb -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO lina;"
+
+
+#make gary superuser ROLE
+sudo -u postgres psql -c "ALTER ROLE gary WITH SUPERUSER;"
+
+
+#the install the extension
+sudo apt install build-essential postgresql-server-dev-18
+git clone --branch v0.7.0 https://github.com/pgvector/pgvector.git
+cd pgvector
+
+cd ~/pgvector
+nano src/hnswvacuum.c
